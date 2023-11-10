@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/20pa5a1210/blog-aggregator/internal/auth"
 	"github.com/google/uuid"
 )
 
@@ -31,16 +32,37 @@ func (apiconfig *APIConfig) handleCreateUser(w http.ResponseWriter, r *http.Requ
     )
     RETURNING id, created_at, updated_at, name, api_key
     `
-    var res User
-    err = apiconfig.DB.QueryRow(createUser,
+	var res User
+	err = apiconfig.DB.QueryRow(createUser,
 		uuid.New(),
 		time.Now().UTC(),
 		time.Now().UTC(),
 		params.Name,
 	).Scan(&res.ID, &res.CreatedAt, &res.UpdatedAt, &res.Name, &res.ApiKey)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	respondWithJSON(w, 201, res)
+}
+
+func (apiconfig *APIConfig) handleGetUser(w http.ResponseWriter, r *http.Request) {
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		respondWithJSON(w, http.StatusUnauthorized, map[string]string{"error": err.Error()})
+		return
+	}
+
+	const getUser = `
+    SELECT id, created_at, updated_at, name, api_key
+    FROM users
+    WHERE api_key = $1
+    `
+    var res User
+    err = apiconfig.DB.QueryRow(getUser, apiKey).Scan(&res.ID, &res.CreatedAt, &res.UpdatedAt, &res.Name, &res.ApiKey)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        respondWithJSON(w, http.StatusUnauthorized, map[string]string{"error": err.Error()})
         return
     }
-	respondWithJSON(w, http.StatusOK, res)
+    respondWithJSON(w, 200, databaseUserToUser(res))
 }
