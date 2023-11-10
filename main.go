@@ -9,33 +9,34 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
-    _ "github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
+
 type APIConfig struct {
-    DB *sql.DB
+	DB *sql.DB
 }
+
 func main() {
 	godotenv.Load()
 	var PORT string = os.Getenv("PORT")
 
-    dbURL := os.Getenv("DB_URL")
-    if dbURL == "" {
-        log.Fatal("DB_URL not set")
-    }
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("DB_URL not set")
+	}
 
-    conn,err := sql.Open("postgres", dbURL)
-    if err != nil {
-        log.Fatal(err)
-    }
-    apiConfig := &APIConfig{
-        DB: conn,
-    }
-
+	conn, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	apiConfig := &APIConfig{
+		DB: conn,
+	}
 
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"https://*", "http://*"},
+		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -43,16 +44,17 @@ func main() {
 		MaxAge:           300,
 	}))
 
-    v1Router := chi.NewRouter()
-    v1Router.Get("/ready", handlerReadiness)
-    v1Router.Get("/err", handleError)
-    v1Router.Post("/users", apiConfig.handleCreateUser)
+	v1Router := chi.NewRouter()
+	v1Router.Get("/ready", handlerReadiness)
+	v1Router.Get("/err", handleError)
+	v1Router.Post("/users", apiConfig.handleCreateUser)
 
-    router.Mount("/v1", v1Router)
+	router.Mount("/v1", v1Router)
 
 	server := &http.Server{
 		Handler: router,
 		Addr:    ":" + PORT,
 	}
-    server.ListenAndServe()
+	log.Printf("Serving on port: %s\n", PORT)
+	log.Fatal(server.ListenAndServe())
 }
