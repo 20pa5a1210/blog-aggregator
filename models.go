@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,24 +25,27 @@ func databaseUserToUser(user User) User {
 	}
 }
 
+
 type Feed struct {
-    ID        uuid.UUID `json:"id"`
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
-    Name      string    `json:"name"`
-    URL       string    `json:"url"`
-    UserID    uuid.UUID `json:"user_id"`
+	ID            uuid.UUID  `json:"id"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+	Name          string     `json:"name"`
+	Url           string     `json:"url"`
+	UserID        uuid.UUID  `json:"user_id"`
+	LastFetchedAt *time.Time `json:"last_fetched_at"`
 }
 
 func databaseFeedToFeed(feed Feed) Feed {
-    return Feed{
-        ID:        feed.ID,
-        CreatedAt: feed.CreatedAt,
-        UpdatedAt: feed.UpdatedAt,
-        Name:      feed.Name,
-        URL:       feed.URL,
-        UserID:    feed.UserID,
-    }
+	return Feed{
+		ID:            feed.ID,
+		CreatedAt:     feed.CreatedAt,
+		UpdatedAt:     feed.UpdatedAt,
+		Name:          feed.Name,
+		Url:           feed.Url,
+		UserID:        feed.UserID,
+		LastFetchedAt: nullTimeToTimePtr(feed.LastFetchedAt),
+	}
 }
 
 type FeedFollow struct {
@@ -60,4 +64,10 @@ func databaseFeedFollowToFeedFollow(feedFollow FeedFollow) FeedFollow {
         FeedID:    feedFollow.FeedID,
         UserID:    feedFollow.UserID,
     }
+}
+func nullTimeToTimePtr(t sql.NullTime) *time.Time {
+	if t.Valid {
+		return &t.Time
+	}
+	return nil
 }
