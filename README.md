@@ -128,8 +128,8 @@ To use this API, make sure to include all the required parameters in the request
 
 ```json
 {
-    "name":"wagswlaneoqg",
-    "url":"https://wawgslane.dev/index.xml"
+    "name":"wagswlaorgg",
+    "url":"https://wawgslanes.dev/index.xml"
 }
 ```
 
@@ -229,7 +229,7 @@ Remember to include the required request parameters in the request body to creat
 
 ```json
 {
-    "feed_id":"efe7dc15-b177-41f2-b926-069155bb4513"
+    "feed_id":"7f1d8478-25fa-4b26-abbc-c9adbb8935ac"
 }
 ```
 
@@ -318,7 +318,7 @@ Please note that the response body may be empty or contain additional properties
 
 ### Method: DELETE
 >```
->http://localhost:8080/v1/feed_follows/ed615343-9bfc-4463-abca-b5c2b984069a
+>http://localhost:8080/v1/feed_follows/ef27a024-37c0-4c00-acd0-62f3fa4b108d
 >```
 ### Headers
 
@@ -329,3 +329,19 @@ Please note that the response body may be empty or contain additional properties
 
 
 ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+
+## End-point: Get Posts
+### Method: GET
+>```
+>http://localhost:8080/v1/posts
+>```
+### Headers
+
+|Content-Type|Value|
+|---|---|
+|Authorization|ApiKey c15dad31abe6dc4a342df56c49ea96e252128d6b8127cfe6aae757615c8a850c|
+
+
+
+⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃ ⁃
+_________________________________________________
