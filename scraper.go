@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func startScrap(
@@ -83,7 +87,75 @@ func scrapeFeed(db *APIConfig, wg *sync.WaitGroup, feed Feed) {
         return
     }
     for _,item:=range rssFeed.Channel.Item{
-        log.Println("Found post", item.Title)
+        description:=sql.NullString{}
+        if item.Description != "" {
+            description.String = item.Description
+            description.Valid = true
+        }
+        t,err:=time.Parse(time.RFC1123Z,item.PubDate)
+        if err != nil {
+            log.Println(err)
+            continue
+        }
+        _,err=CreatePost(db,context.Background(),CreatePostParams{
+            ID: uuid.New(),
+            CreatedAt: time.Now().UTC(),
+            UpdatedAt: time.Now().UTC(),
+            Title: item.Title,
+            Url: item.Link,
+            Description: description,
+            PublishedAt:t,
+            FeedID:feed.ID,
+        })
+        if err != nil {
+            if strings.Contains(err.Error(),"duplicate key value violates unique constraint") {
+                continue
+            }
+            log.Println(err)
+        }
+
     }
 	log.Printf("Feed %s collected, %v posts found", feed.Name, len(rssFeed.Channel.Item))
+}
+
+const createPost = `-- name: CreatePost :one
+INSERT INTO posts (id, created_at, updated_at, title, url, description, published_at, feed_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, created_at, updated_at, title, url, description, published_at, feed_id
+`
+
+type CreatePostParams struct {
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Title       string
+	Url         string
+	Description sql.NullString
+	PublishedAt time.Time
+	FeedID      uuid.UUID
+}
+
+func CreatePost(db *APIConfig,  ctx context.Context, arg CreatePostParams) (Post, error) {
+	row := db.DB.QueryRowContext(ctx, createPost,
+		arg.ID,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.Title,
+		arg.Url,
+		arg.Description,
+		arg.PublishedAt,
+		arg.FeedID,
+	)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Title,
+		&i.Url,
+		&i.Description,
+		&i.PublishedAt,
+		&i.FeedID,
+	)
+	return i, err
 }

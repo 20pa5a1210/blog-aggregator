@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -47,4 +48,64 @@ func (apiconfig *APIConfig) handleCreateUser(w http.ResponseWriter, r *http.Requ
 
 func (apiconfig *APIConfig) handleGetUser(w http.ResponseWriter, r *http.Request,user User) {
     respondWithJSON(w, 200, databaseUserToUser(user))
+}
+
+
+func (apiconfig *APIConfig) handleGetPosts(w http.ResponseWriter, r *http.Request,user User) {
+    posts,err:=GetPostsForUser(apiconfig,r.Context(),GetPostsForUserParams{
+        UserID:user.ID,
+        Limit:10,
+    })
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    respondWithJSON(w, 200, posts)
+}
+
+
+const getPostsForUser = `-- name: GetPostsForUser :many
+
+SELECT posts.id, posts.created_at, posts.updated_at, posts.title, posts.url, posts.description, posts.published_at, posts.feed_id FROM posts
+JOIN feed_follows ON feed_follows.feed_id = posts.feed_id
+WHERE feed_follows.user_id = $1
+ORDER BY posts.published_at DESC
+LIMIT $2
+`
+
+type GetPostsForUserParams struct {
+	UserID uuid.UUID
+	Limit  int32
+}
+
+func  GetPostsForUser(apiconfig *APIConfig,ctx context.Context, arg GetPostsForUserParams) ([]Post, error) {
+	rows, err := apiconfig.DB.QueryContext(ctx, getPostsForUser, arg.UserID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Url,
+			&i.Description,
+			&i.PublishedAt,
+			&i.FeedID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
