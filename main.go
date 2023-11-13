@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"github.com/go-chi/chi/v5/middleware"
+	"time"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -32,6 +34,8 @@ func main() {
 	apiConfig := &APIConfig{
 		DB: conn,
 	}
+
+    go startScrap(apiConfig, 10,time.Minute)
 
 	router := chi.NewRouter()
 

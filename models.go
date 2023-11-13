@@ -44,7 +44,7 @@ func databaseFeedToFeed(feed Feed) Feed {
 		Name:          feed.Name,
 		Url:           feed.Url,
 		UserID:        feed.UserID,
-		LastFetchedAt: nullTimeToTimePtr(feed.LastFetchedAt),
+		LastFetchedAt: feed.LastFetchedAt,
 	}
 }
 

@@ -34,7 +34,7 @@ func (apiconfig *APIConfig) handleCreateFeed(w http.ResponseWriter, r *http.Requ
 		params.Name,
         params.URL,
         user.ID,
-	).Scan(&res.ID, &res.CreatedAt, &res.UpdatedAt, &res.Name, &res.URL, &res.UserID)
+	).Scan(&res.ID, &res.CreatedAt, &res.UpdatedAt, &res.Name, &res.Url, &res.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -56,7 +56,7 @@ func (apiconfig *APIConfig) handleGetFeed(w http.ResponseWriter, r *http.Request
 
     for rows.Next() {
         var feed Feed
-        err := rows.Scan(&feed.ID, &feed.CreatedAt, &feed.UpdatedAt, &feed.Name, &feed.URL, &feed.UserID)
+        err := rows.Scan(&feed.ID, &feed.CreatedAt, &feed.UpdatedAt, &feed.Name, &feed.Url, &feed.UserID)
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
